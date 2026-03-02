@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useRef, useCallback, useMemo } from 'react'
-import { FiUploadCloud, FiUsers, FiTrendingUp, FiMinus, FiTrendingDown, FiX, FiChevronUp, FiChevronDown, FiExternalLink, FiMail, FiPhone, FiLinkedin, FiInfo } from 'react-icons/fi'
+import { FiUploadCloud, FiUsers, FiTrendingUp, FiMinus, FiTrendingDown, FiX, FiChevronUp, FiChevronDown, FiExternalLink, FiMail, FiPhone, FiLinkedin, FiInfo, FiFile, FiGrid } from 'react-icons/fi'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -88,26 +88,53 @@ function matchBadge(match: string) {
   return <Badge className="bg-destructive text-destructive-foreground border-0 text-[11px] px-1.5 py-0">LOW</Badge>
 }
 
+const EXCEL_MIME_TYPES = [
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  'application/vnd.ms-excel',
+  'text/csv',
+]
+
+type UploadTab = 'pdf' | 'excel'
+
 export default function DashboardSection({ currentReport, loading, error, onProcessFile, showSample, onToggleSample }: DashboardSectionProps) {
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [dragOver, setDragOver] = useState(false)
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null)
   const [sortKey, setSortKey] = useState<SortKey>('name')
   const [sortDir, setSortDir] = useState<SortDir>('asc')
+  const [uploadTab, setUploadTab] = useState<UploadTab>('pdf')
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const reportData = showSample ? SAMPLE_REPORT : currentReport
+
+  const acceptedTypes = uploadTab === 'pdf' ? '.pdf' : '.xlsx,.xls,.csv'
+
+  const isFileValid = useCallback((file: File) => {
+    if (uploadTab === 'pdf') {
+      return file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')
+    }
+    return EXCEL_MIME_TYPES.includes(file.type) ||
+      file.name.toLowerCase().endsWith('.xlsx') ||
+      file.name.toLowerCase().endsWith('.xls') ||
+      file.name.toLowerCase().endsWith('.csv')
+  }, [uploadTab])
 
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault()
     setDragOver(false)
     const file = e.dataTransfer.files?.[0]
-    if (file && file.type === 'application/pdf') setSelectedFile(file)
-  }, [])
+    if (file && isFileValid(file)) setSelectedFile(file)
+  }, [isFileValid])
 
   const handleFileSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) setSelectedFile(file)
+  }, [])
+
+  const handleTabChange = useCallback((tab: UploadTab) => {
+    setUploadTab(tab)
+    setSelectedFile(null)
+    if (fileInputRef.current) fileInputRef.current.value = ''
   }, [])
 
   const handleSort = (key: SortKey) => {
@@ -149,30 +176,70 @@ export default function DashboardSection({ currentReport, loading, error, onProc
 
       <ScrollArea className="flex-1">
         <div className="p-4 space-y-4">
-          {/* Upload Area */}
+          {/* Upload Area with Tabs */}
           <div className="flex gap-3 items-start">
             <Card className="flex-1 shadow-none">
-              <CardContent className="p-3">
-                <div
-                  onDragOver={(e) => { e.preventDefault(); setDragOver(true) }}
-                  onDragLeave={() => setDragOver(false)}
-                  onDrop={handleDrop}
-                  onClick={() => fileInputRef.current?.click()}
-                  className={`border-2 border-dashed rounded-sm p-4 text-center cursor-pointer transition-colors ${dragOver ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'}`}
-                >
-                  <input ref={fileInputRef} type="file" accept=".pdf" className="hidden" onChange={handleFileSelect} />
-                  <FiUploadCloud className="w-6 h-6 mx-auto text-muted-foreground mb-1" />
-                  <p className="text-xs text-muted-foreground">Drop PDF here or click to upload</p>
-                  <p className="text-[10px] text-muted-foreground mt-0.5">.pdf files only</p>
+              <CardContent className="p-0">
+                {/* Tab Headers */}
+                <div className="flex border-b border-border">
+                  <button
+                    onClick={() => handleTabChange('pdf')}
+                    className={`flex items-center gap-1.5 px-4 py-2 text-xs font-medium transition-colors border-b-2 ${
+                      uploadTab === 'pdf'
+                        ? 'border-primary text-primary'
+                        : 'border-transparent text-muted-foreground hover:text-foreground'
+                    }`}
+                  >
+                    <FiFile className="w-3.5 h-3.5" />
+                    PDF Upload
+                  </button>
+                  <button
+                    onClick={() => handleTabChange('excel')}
+                    className={`flex items-center gap-1.5 px-4 py-2 text-xs font-medium transition-colors border-b-2 ${
+                      uploadTab === 'excel'
+                        ? 'border-primary text-primary'
+                        : 'border-transparent text-muted-foreground hover:text-foreground'
+                    }`}
+                  >
+                    <FiGrid className="w-3.5 h-3.5" />
+                    Excel Upload
+                  </button>
                 </div>
-                {selectedFile && (
-                  <div className="flex items-center justify-between mt-2 px-2 py-1 bg-secondary rounded-sm">
-                    <span className="text-xs text-foreground truncate max-w-[200px]">{selectedFile.name}</span>
-                    <button onClick={(e) => { e.stopPropagation(); setSelectedFile(null) }} className="text-muted-foreground hover:text-foreground">
-                      <FiX className="w-3 h-3" />
-                    </button>
+                {/* Dropzone */}
+                <div className="p-3">
+                  <div
+                    onDragOver={(e) => { e.preventDefault(); setDragOver(true) }}
+                    onDragLeave={() => setDragOver(false)}
+                    onDrop={handleDrop}
+                    onClick={() => fileInputRef.current?.click()}
+                    className={`border-2 border-dashed rounded-sm p-4 text-center cursor-pointer transition-colors ${dragOver ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'}`}
+                  >
+                    <input ref={fileInputRef} type="file" accept={acceptedTypes} className="hidden" onChange={handleFileSelect} />
+                    <FiUploadCloud className="w-6 h-6 mx-auto text-muted-foreground mb-1" />
+                    {uploadTab === 'pdf' ? (
+                      <>
+                        <p className="text-xs text-muted-foreground">Drop PDF here or click to upload</p>
+                        <p className="text-[10px] text-muted-foreground mt-0.5">.pdf files only</p>
+                      </>
+                    ) : (
+                      <>
+                        <p className="text-xs text-muted-foreground">Drop Excel file here or click to upload</p>
+                        <p className="text-[10px] text-muted-foreground mt-0.5">.xlsx, .xls, or .csv files</p>
+                      </>
+                    )}
                   </div>
-                )}
+                  {selectedFile && (
+                    <div className="flex items-center justify-between mt-2 px-2 py-1 bg-secondary rounded-sm">
+                      <div className="flex items-center gap-1.5 min-w-0">
+                        {uploadTab === 'pdf' ? <FiFile className="w-3 h-3 text-muted-foreground flex-shrink-0" /> : <FiGrid className="w-3 h-3 text-muted-foreground flex-shrink-0" />}
+                        <span className="text-xs text-foreground truncate max-w-[200px]">{selectedFile.name}</span>
+                      </div>
+                      <button onClick={(e) => { e.stopPropagation(); setSelectedFile(null) }} className="text-muted-foreground hover:text-foreground">
+                        <FiX className="w-3 h-3" />
+                      </button>
+                    </div>
+                  )}
+                </div>
               </CardContent>
             </Card>
             <Button
@@ -241,7 +308,7 @@ export default function DashboardSection({ currentReport, loading, error, onProc
               ) : leads.length === 0 ? (
                 <div className="py-12 text-center">
                   <FiUsers className="w-8 h-8 mx-auto text-muted-foreground/30 mb-2" />
-                  <p className="text-xs text-muted-foreground">Upload a PDF to extract and analyze leads</p>
+                  <p className="text-xs text-muted-foreground">Upload a PDF or Excel file to extract and analyze leads</p>
                 </div>
               ) : (
                 <Table>
