@@ -1,0 +1,90 @@
+{
+  "workflow": {
+    "nodes": [
+      {
+        "id": "input_node",
+        "type": "Input",
+        "label": "PDF Upload",
+        "nodeCategory": "input"
+      },
+      {
+        "id": "manager_agent",
+        "type": "Agent",
+        "label": "Lead Intelligence Manager",
+        "nodeCategory": "agent",
+        "agent_id": "69a4d6669df18c326fa9b61c"
+      },
+      {
+        "id": "pdf_extractor",
+        "type": "Agent",
+        "label": "PDF Extractor Agent",
+        "nodeCategory": "agent",
+        "agent_id": "69a4d64083d9f94e959ef284"
+      },
+      {
+        "id": "company_research",
+        "type": "Agent",
+        "label": "Company Research Agent",
+        "nodeCategory": "agent",
+        "agent_id": "69a4d641bda11ef6b419ebdc"
+      },
+      {
+        "id": "persona_scoring",
+        "type": "Agent",
+        "label": "Persona Scoring Agent",
+        "nodeCategory": "agent",
+        "agent_id": "69a4d651458020b954058c36"
+      },
+      {
+        "id": "output_node",
+        "type": "Output",
+        "label": "Lead Report Output",
+        "nodeCategory": "end"
+      }
+    ],
+    "edges": [
+      { "source": "input_node", "target": "manager_agent" },
+      { "source": "manager_agent", "target": "pdf_extractor" },
+      { "source": "manager_agent", "target": "company_research" },
+      { "source": "manager_agent", "target": "persona_scoring" },
+      { "source": "pdf_extractor", "target": "output_node" },
+      { "source": "company_research", "target": "output_node" },
+      { "source": "persona_scoring", "target": "output_node" }
+    ]
+  },
+  "agents": [
+    {
+      "name": "PDF Extractor Agent",
+      "agent_id": "69a4d64083d9f94e959ef284",
+      "provider": "OpenAI",
+      "model": "gpt-4.1",
+      "type": "sub-agent"
+    },
+    {
+      "name": "Company Research Agent",
+      "agent_id": "69a4d641bda11ef6b419ebdc",
+      "provider": "Perplexity",
+      "model": "sonar-pro",
+      "type": "sub-agent"
+    },
+    {
+      "name": "Persona Scoring Agent",
+      "agent_id": "69a4d651458020b954058c36",
+      "provider": "Anthropic",
+      "model": "claude-sonnet-4-5",
+      "type": "sub-agent"
+    },
+    {
+      "name": "Lead Intelligence Manager",
+      "agent_id": "69a4d6669df18c326fa9b61c",
+      "provider": "OpenAI",
+      "model": "gpt-4.1",
+      "type": "manager",
+      "managed_agents": [
+        "69a4d64083d9f94e959ef284",
+        "69a4d641bda11ef6b419ebdc",
+        "69a4d651458020b954058c36"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,78 @@
+{
+  "agent_name": "Lead Intelligence Manager",
+  "agent_id": "69a4d6669df18c326fa9b61c",
+  "description": "Coordinates PDF extraction, company research, and persona scoring sub-agents; aggregates results into a structured lead report with all fields",
+  "agent_type": "json",
+  "accessor": "result",
+  "auto_generated": true,
+  "response_schema": {
+    "report_title": "string",
+    "total_leads": "number",
+    "leads": [
+      {
+        "name": "string",
+        "position": "string",
+        "company": "string",
+        "linkedin_url": "string",
+        "email": "string",
+        "phone": "string",
+        "industry": "string",
+        "employee_count": "string",
+        "company_description": "string",
+        "tech_stack": "string",
+        "persona_match": "string",
+        "match_rationale": "string",
+        "competitors": [
+          "string"
+        ],
+        "scoring_factors": {
+          "role_fit": "string",
+          "company_size_fit": "string",
+          "industry_fit": "string",
+          "tech_stack_fit": "string"
+        }
+      }
+    ],
+    "match_summary": {
+      "high_count": "number",
+      "medium_count": "number",
+      "low_count": "number"
+    },
+    "analysis_notes": "string"
+  },
+  "example_response": {
+    "report_title": "sample string",
+    "total_leads": 0,
+    "leads": [
+      {
+        "name": "sample string",
+        "position": "sample string",
+        "company": "sample string",
+        "linkedin_url": "sample string",
+        "email": "sample string",
+        "phone": "sample string",
+        "industry": "sample string",
+        "employee_count": "sample string",
+        "company_description": "sample string",
+        "tech_stack": "sample string",
+        "persona_match": "sample string",
+        "match_rationale": "sample string",
+        "competitors": [
+          "sample string"
+        ],
+        "scoring_factors": {
+          "role_fit": "sample string",
+          "company_size_fit": "sample string",
+          "industry_fit": "sample string",
+          "tech_stack_fit": "sample string"
+        }
+      }
+    ],
+    "match_summary": {
+      "high_count": 0,
+      "medium_count": 0,
+      "low_count": 0
+    },
+    "analysis_notes": "sample string"
+  }
+}
